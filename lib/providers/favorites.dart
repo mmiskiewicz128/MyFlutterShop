@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shop_app/models/http_exception.dart';
 
 class Favorite {
   final String id;
@@ -12,26 +13,39 @@ class Favorite {
 
 class Favorites extends ChangeNotifier {
   List<Favorite> _userFavorites = [];
-  String userIdMock = 'xxx';
+  final authTokenId;
+  final userId;
 
-  String apiUrl = 'https://myshop-futterguide.firebaseio.com/favorites.json';
+  String get apiUrl {
+    return 'https://myshop-futterguide.firebaseio.com/favorites.json?auth=$authTokenId';
+  }
+
+  String get apiUrlByUserId {
+    return 'https://myshop-futterguide.firebaseio.com/favorites.json?auth=$authTokenId&orderBy="userId"&equalTo="$userId"';
+  }
 
   String getApiUrlById(String id) {
-    return 'https://myshop-futterguide.firebaseio.com/favorites/$id.json';
+    return 'https://myshop-futterguide.firebaseio.com/favorites/$id.json?auth=$authTokenId';
   }
 
   List<Favorite> get uesrFaforites {
     return [..._userFavorites];
   }
 
+  factory Favorites.empty() {
+    return Favorites('', '', []);
+  }
+
+  Favorites(this.authTokenId, this.userId, this._userFavorites);
+
   Future<void> fetchAndSet() async {
     try {
-      final response = await http.get(apiUrl);
+      final response = await http.get(apiUrlByUserId);
 
       var extractedData = json.decode(response.body) as Map<String, dynamic>;
 
-   if (extractedData == null || response.statusCode >= 400) {
-        return;
+      if (extractedData == null || response.statusCode >= 400) {
+        throw HttpException.fromResponse(response);
       }
 
       final List<Favorite> loadedProducts = [];
@@ -49,55 +63,57 @@ class Favorites extends ChangeNotifier {
     }
   }
 
-  Future<void> markAsFavorite(String productId) {
+  Future<void> markAsFavorite(String productId) async {
     if (_userFavorites.any((element) => element.productId == productId)) {
       return Future.delayed(Duration.zero);
     }
-    return http
-        .post(apiUrl,
-            body: json.encode({'productId': productId, 'userId': userIdMock}))
-        .catchError((error) {
-      print(error);
-    }).then((response) {
+
+    try {
+      var response = await http.post(apiUrl,
+          body: json.encode({'productId': productId, 'userId': userId}));
       if (response.statusCode < 400) {
         _userFavorites.add(Favorite(
             id: json.decode(response.body)['name'],
             productId: productId,
-            userId: userIdMock));
+            userId: userId));
         notifyListeners();
+      } else {
+        throw HttpException.fromResponse(response);
       }
-    });
+    } catch (error) {
+      throw error;
+    }
   }
 
-  Future<void> toggleFavorite(String productId) {
+  Future<void> toggleFavorite(String productId) async {
     int index =
         _userFavorites.indexWhere((item) => item.productId == productId);
     if (index < 0) {
-      return http
-          .post(apiUrl,
-              body: json.encode({'productId': productId, 'userId': userIdMock}))
-          .catchError((error) {
-        print(error);
-      }).then((response) {
+      try {
+        var response = await http.post(apiUrl,
+            body: json.encode({'productId': productId, 'userId': userId}));
+
         if (response.statusCode < 400) {
           _userFavorites.add(Favorite(
               id: json.decode(response.body)['name'],
               productId: productId,
-              userId: userIdMock));
+              userId: userId));
           notifyListeners();
+        } else {
+          throw HttpException.fromResponse(response);
         }
-      });
+      } catch (error) {
+        throw error;
+      }
     } else {
-      return http
-          .delete(getApiUrlById(_userFavorites[index].id))
-          .catchError((error) {
-        print(error);
-      }).then((response) {
-        if (response.statusCode < 400) {
-          _userFavorites.removeAt(index);
-          notifyListeners();
-        }
-      });
+      var response = await http.delete(getApiUrlById(_userFavorites[index].id));
+
+      if (response.statusCode < 400) {
+        _userFavorites.removeAt(index);
+        notifyListeners();
+      } else {
+        throw HttpException.fromResponse(response);
+      }
     }
   }
 }

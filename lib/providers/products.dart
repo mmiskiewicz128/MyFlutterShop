@@ -7,17 +7,22 @@ import '../utils/extensions.dart';
 
 class Products with ChangeNotifier {
   List<Product> _items = [];
-  static const apiUrl =
-      'https://myshop-futterguide.firebaseio.com/products.json';
+  final authTokenId;
+
+  String get apiUrl {
+      return 'https://myshop-futterguide.firebaseio.com/products.json?auth=$authTokenId';
+  }
+
+  String apiUrlById(String id) {
+    return 'https://myshop-futterguide.firebaseio.com/products/$id.json?auth=$authTokenId';
+  }
 
   List<Product> get items {
     // zwracam kopie listy. nie przekazuje referencji do _items
     return [..._items];
   }
 
-  String apiUrlById(String id) {
-    return 'https://myshop-futterguide.firebaseio.com/products/$id.json';
-  }
+  Products(this.authTokenId, this._items);
 
   Future<void> addProduct(Product value) {
     return http
@@ -50,7 +55,7 @@ class Products with ChangeNotifier {
       var extractedData = json.decode(response.body) as Map<String, dynamic>;
 
       if (extractedData == null || response.statusCode >= 400) {
-        return;
+          throw HttpException.fromResponse(response);
       }
 
       final List<Product> loadedProducts = [];

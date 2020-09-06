@@ -123,7 +123,7 @@ class _AuthCardState extends State<AuthCard> {
 
       _showErrorDialog(errorMessage);
     }
-                
+            
     setState(() {
       _isLoading = false;
     });

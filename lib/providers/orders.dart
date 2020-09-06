@@ -16,25 +16,39 @@ class OrderItem {
 
 class Orders with ChangeNotifier {
   List<OrderItem> _orders = [];
+  final authTokenId;
+  final userId;
 
-  String apiUrl = 'https://myshop-futterguide.firebaseio.com/orders.json';
+  String get apiUrl {
+    return 'https://myshop-futterguide.firebaseio.com/orders.json?auth=$authTokenId';
+  }
+
+  String get apiUrlByUserId {
+    return 'https://myshop-futterguide.firebaseio.com/orders.json?auth=$authTokenId&orderBy="userId"&equalTo="$userId"';
+  }
 
   String getApiUrlById(String id) {
-    return 'https://myshop-futterguide.firebaseio.com/orders/$id.json';
+    return 'https://myshop-futterguide.firebaseio.com/orders/$id.json?auth=$authTokenId';
   }
 
   List<OrderItem> get orders {
     return [..._orders];
   }
 
+  factory Orders.empty() {
+    return Orders('', '', []);
+  }
+
+  Orders(this.authTokenId, this.userId, this._orders);
+
   Future<void> fetchAndSet() async {
     try {
-      final response = await http.get(apiUrl);
+      final response = await http.get(apiUrlByUserId);
 
       var extractedData = json.decode(response.body) as Map<String, dynamic>;
 
-      if (extractedData == null) {
-        return;
+      if (extractedData == null || response.statusCode >= 400) {
+        throw HttpException.fromResponse(response);
       }
 
       final List<OrderItem> loadedOrders = [];
@@ -69,6 +83,7 @@ class Orders with ChangeNotifier {
             body: json.encode({
               'amount': total,
               'dateTime': timeStamp.toIso8601String(),
+              'userId': userId,
               'products': cartItems
                   .map((e) => {
                         'id': e.id,
