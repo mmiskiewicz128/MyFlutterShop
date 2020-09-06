@@ -1,6 +1,8 @@
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
+import 'package:shop_app/providers/auth.dart';
 import 'package:shop_app/providers/favorites.dart';
+import 'package:shop_app/screens/auth_screen.dart';
 import 'package:shop_app/screens/edit_product_screen.dart';
 import 'package:shop_app/screens/orders_screen.dart';
 import 'package:shop_app/screens/user_products_screen.dart';
@@ -20,11 +22,14 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (ctx) {
+          return Auth();
+        }),
+        ChangeNotifierProvider(create: (ctx) {
           return Products();
         }),
         ChangeNotifierProvider(create: (ctx) {
           return Cart();
-        }), 
+        }),
         ChangeNotifierProvider(create: (ctx) {
           return Orders();
         }),
@@ -38,14 +43,18 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.teal,
             accentColor: Colors.redAccent,
             fontFamily: 'Lato'),
-        home: ProductOverviewScreen(),
+        home: AuthScreen(), //ProductOverviewScreen(),
         routes: {
+          ProductOverviewScreen.routeName: (ctx) => ProductOverviewScreen(),
           ProductDetailsScreen.routeName: (ctx) => ProductDetailsScreen(),
           CartScreen.routeName: (ctx) => CartScreen(),
           OrderScreen.routeName: (ctx) => OrderScreen(),
           UserProductsScreen.routeName: (ctx) => UserProductsScreen(),
-          EditProductScreen.routeNameCreate: (ctx) => EditProductScreen(isEditProductMode: false),
-          EditProductScreen.routeNameEdit: (ctx) => EditProductScreen(isEditProductMode: true),
+          EditProductScreen.routeNameCreate: (ctx) =>
+              EditProductScreen(isEditProductMode: false),
+          EditProductScreen.routeNameEdit: (ctx) =>
+              EditProductScreen(isEditProductMode: true),
+          AuthScreen.routeName: (ctx) => AuthScreen(),
         },
       ),
     );
