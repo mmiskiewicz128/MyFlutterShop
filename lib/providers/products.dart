@@ -49,7 +49,7 @@ class Products with ChangeNotifier {
 
       var extractedData = json.decode(response.body) as Map<String, dynamic>;
 
-      if (extractedData == null) {
+      if (extractedData == null || response.statusCode >= 400) {
         return;
       }
 
