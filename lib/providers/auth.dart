@@ -123,7 +123,7 @@ class Auth with ChangeNotifier {
     }
   }
 
-  void logout() {
+  void logout() async {
     _token = null;
     _expirtDate = null;
     _userId = null;
@@ -131,6 +131,9 @@ class Auth with ChangeNotifier {
     _autoLogoutTimer?.cancel();
     _autoLogoutTimer = null;
     notifyListeners();
+
+    final preferences = await SharedPreferences.getInstance();
+    preferences.clear();
   }
 
   void _autoLogout() {
