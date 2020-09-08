@@ -36,7 +36,16 @@ class _ProductItemState extends State<ProductItem> {
           ClipRRect(
             borderRadius: BorderRadius.circular(10.0),
             child: GridTile(
-              child: Image.network(product.imageUrl, fit: BoxFit.cover),
+              // NetworkImage poczeka aż załaduje się obrazek
+              child: Hero(
+                tag: product.id,
+                child: FadeInImage(
+                    placeholder: AssetImage('assets/images/PlaceHolder.jpg'),
+                    image: NetworkImage(product.imageUrl),
+                    fit: BoxFit.cover),
+              ),
+
+              // Image.network(product.imageUrl, fit: BoxFit.cover),
               footer: GridTileBar(
                 title: Text(product.title,
                     textAlign: TextAlign.left,

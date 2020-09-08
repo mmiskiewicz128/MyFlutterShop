@@ -34,13 +34,24 @@ class _OrderListItemState extends State<OrderListItem> {
               },
             ),
           ),
-          if (_isExpanded)
-            Container(
-              height: min(widget.orderItem.products.length * 20.0 + 50, 180),
+          //  if (_isExpanded)
+          AnimatedContainer(
+            duration: Duration(milliseconds: 300),
+            constraints: BoxConstraints(
+                maxHeight: _isExpanded
+                    ? min(widget.orderItem.products.length * 20.0 + 50, 180)
+                    : 0,
+                minHeight: _isExpanded
+                    ? min(widget.orderItem.products.length * 20.0 + 50, 180)
+                    : 0),
+            curve: Curves.easeInSine,
+            child: Container(
+              //height: min(widget.orderItem.products.length * 20.0 + 50, 180),
               child: ListView.builder(
                   itemBuilder: (ctx, index) {
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10,horizontal: 10),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 10),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -50,12 +61,11 @@ class _OrderListItemState extends State<OrderListItem> {
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 18)),
                           ),
-                          Text(
-                              '${widget.orderItem.products[index].quantinty}x',
-                                  
+                          Text('${widget.orderItem.products[index].quantinty}x',
                               style: TextStyle(
                                   color: Colors.grey,
-                                  fontWeight: FontWeight.normal, fontSize: 18)),
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 18)),
                           Text(
                               '\$${widget.orderItem.products[index].price.toStringAsFixed(2)}',
                               style: TextStyle(
@@ -65,7 +75,8 @@ class _OrderListItemState extends State<OrderListItem> {
                     );
                   },
                   itemCount: widget.orderItem.products.length),
-            )
+            ),
+          )
         ],
       ),
     );

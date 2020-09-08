@@ -31,9 +31,12 @@ class ProductDetailsScreen extends StatelessWidget {
               width: double.infinity,
               child: FavoriteAnimatedIcon(
                   iconSize: 150,
-                  child: Image.network(
-                    product.imageUrl,
-                    fit: BoxFit.fitHeight,
+                  child: Hero(
+                    tag: product.id,
+                    child: Image.network(
+                      product.imageUrl,
+                      fit: BoxFit.fitHeight,
+                    ),
                   ),
                   productId: product.id),
             ),
